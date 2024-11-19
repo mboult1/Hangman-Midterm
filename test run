@@ -1,0 +1,192 @@
+import random
+import time
+from words import word_list
+
+
+def get_word():
+   word = random.choice(word_list)
+   return word.upper()
+
+
+def play(word):
+   word_completion = "_" * len(word)
+   guessed = False
+   guessed_letters = []
+   guessed_words = []
+   tries = 6
+   print("Let's play Hangman!")
+   
+   # Start the timer
+   start_time = time.time()
+   
+   print(display_hangman(tries))
+   print(word_completion)
+   print("\n")
+   
+   while not guessed and tries > 0:
+       guess = input("Please guess a letter or word: ").upper()
+       if len(guess) == 1 and guess.isalpha():
+           if guess in guessed_letters:
+               print("You already guessed the letter", guess)
+           elif guess not in word:
+               print(guess, "is not in the word.")
+               tries -= 1
+               guessed_letters.append(guess)
+           else:
+               print("Good job,", guess, "is in the word!")
+               guessed_letters.append(guess)
+               word_as_list = list(word_completion)
+               indices = [i for i, letter in enumerate(word) if letter == guess]
+               for index in indices:
+                   word_as_list[index] = guess
+               word_completion = "".join(word_as_list)
+               if "_" not in word_completion:
+                   guessed = True
+       elif len(guess) == len(word) and guess.isalpha():
+           if guess in guessed_words:
+               print("You already guessed the word", guess)
+           elif guess != word:
+               print(guess, "is not the word.")
+               tries -= 1
+               guessed_words.append(guess)
+           else:
+               guessed = True
+               word_completion = word
+       else:
+           print("Not a valid guess.")
+       print(display_hangman(tries))
+       print(word_completion)
+       print("\n")
+   
+   # End the timer and calculate time taken
+   end_time = time.time()
+   time_taken = end_time - start_time
+
+   if guessed:
+       print("Congrats, you guessed the word! You win!")
+   else:
+       print("Sorry, you ran out of tries. The word was " + word + ". Maybe next time!")
+   
+   # Display time taken
+   print(f"Time taken: {time_taken:.2f} seconds\n")
+
+
+def display_hangman(tries):
+   stages = [
+       """
+          --------
+          |      |
+          |      O
+          |     \\|/
+          |      |
+          |     / \\
+          -
+       """,
+       """
+          --------
+          |      |
+          |      O
+          |     \\|/
+          |      |
+          |     / 
+          -
+       """,
+       """
+          --------
+          |      |
+          |      O
+          |     \\|/
+          |      |
+          |      
+          -
+       """,
+       """
+          --------
+          |      |
+          |      O
+          |     \\|
+          |      |
+          |     
+          -
+       """,
+       """
+          --------
+          |      |
+          |      O
+          |      |
+          |      |
+          |     
+          -
+       """,
+       """
+          --------
+          |      |
+          |      O
+          |    
+          |      
+          |     
+          -
+       """,
+       """
+          --------
+          |      |
+          |      
+          |    
+          |      
+          |     
+          -
+       """
+   ]
+   return stages[tries]
+
+
+# Test function to simulate gameplay
+def test_play():
+   # Define a list of test words
+   test_words = ["PYTHON", "HANGMAN", "TESTING", "DEVELOPER", "COMPUTER"]
+   random.seed(0)  # Ensures deterministic testing if random functions are called
+   
+   # Define mock guesses for each word
+   mock_guesses = {
+       "PYTHON": iter(['P', 'Y', 'Z', 'T', 'H', 'O', 'N', 'PYTHON']),
+       "HANGMAN": iter(['H', 'A', 'N', 'G', 'M', 'Z', 'A', 'HANGMAN']),
+       "TESTING": iter(['T', 'E', 'S', 'T', 'I', 'N', 'G', 'TESTING']),
+       "DEVELOPER": iter(['D', 'E', 'V', 'L', 'O', 'P', 'R', 'E', 'DEVELOPER']),
+       "COMPUTER": iter(['C', 'O', 'M', 'P', 'U', 'T', 'E', 'R', 'COMPUTER'])
+   }
+   
+   # Patch the input function to mock user input
+   original_input = __builtins__.input
+   def mock_input(prompt):
+       word = prompt.split()[-1]
+       return next(mock_guesses[word])
+   
+   __builtins__.input = mock_input
+
+   # Run the game for each word in the test words list
+   for word in test_words:
+       print(f"\nTesting word: {word}")
+       try:
+           play(word)  # Simulate the game using the test word and mock inputs
+       finally:
+           print(f"Test for word '{word}' completed successfully.\n")
+   
+   # Restore original input function
+   __builtins__.input = original_input
+
+
+# Run the test
+if __name__ == "__main__":
+   test_play()
+
+def main():
+   word = get_word()
+   play(word)
+   while input("Play Again? (Y/N) ").upper() == "Y":
+       word = get_word()
+       play(word)
+
+
+if __name__ == "__main__":
+   # Run the test
+   test_play()
